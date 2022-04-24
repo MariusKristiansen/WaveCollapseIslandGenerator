@@ -2,6 +2,9 @@
 
 namespace IslandGenerator;
 
+/// <summary>
+/// This code is beyond awful and incredibly inefficient and slow. Ye be warned.
+/// </summary>
 public class Generator
 {
     public int XDim { get; set; }
