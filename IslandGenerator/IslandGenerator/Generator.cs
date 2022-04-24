@@ -7,9 +7,16 @@ public class Generator
     public int XDim { get; set; }
     public int YDim { get; set; }
     internal Random Rng { get; set; }
-    public SuperposedCell[,] Island { get; set; } 
+    public SuperposedCell[,] Island { get; set; }
 
-    public Generator(int xDim = 20, int yDim = 20, int? seed = null)
+    public static string GenerateIsland(int xDim = 20, int yDim = 20, int? seed = null)
+    {
+        var gen = new Generator(xDim, yDim, seed);
+        gen.Generate();
+        return gen.GetLayout();
+    }
+
+    private Generator(int xDim, int yDim, int? seed)
     {
         Rng = seed is null ? new() : new((int)seed);
         XDim = xDim;
