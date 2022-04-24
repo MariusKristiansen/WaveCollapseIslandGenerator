@@ -9,11 +9,11 @@ public class Generator
     internal Random Rng { get; set; }
     public SuperposedCell[,] Island { get; set; }
 
-    public static string GenerateIsland(int xDim = 20, int yDim = 20, int? seed = null)
+    public static string GenerateIsland(int xDim = 20, int yDim = 20, int? seed = null, bool flattened = true)
     {
         var gen = new Generator(xDim, yDim, seed);
         gen.Generate();
-        return gen.GetLayout();
+        return gen.GetLayout(flattened).Trim();
     }
 
     private Generator(int xDim, int yDim, int? seed)
@@ -127,7 +127,7 @@ public class Generator
         }
     }
 
-    private string GetLayout()
+    private string GetLayout(bool flattened = false)
     {
         string output = "";
         for (int x = 0; x < XDim; x++)
@@ -136,7 +136,7 @@ public class Generator
             {
                 output += Island[x, y].CellType.MyType.ToString()[0];
             }
-            output += "\n";
+            if (!flattened) output += "\n";
         }
         return output;
     }
