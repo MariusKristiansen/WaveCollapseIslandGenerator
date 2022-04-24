@@ -25,7 +25,7 @@ public class Generator
         InitializeIslandArray();
     }
     
-    public int FindLowestEntropy()
+    private int FindLowestEntropy()
     {
         int entropy = 5;
         foreach (var cell in Island)
@@ -45,7 +45,7 @@ public class Generator
         if (cells.Any()) cells[index].Collapse();
     }
 
-    public List<SuperposedCell> GetCellsWithEntropy(int entropy)
+    private List<SuperposedCell> GetCellsWithEntropy(int entropy)
     {
         List<SuperposedCell> cells = new();
         foreach (var cell in Island)
@@ -58,12 +58,12 @@ public class Generator
         return cells;
     }
 
-    public void Generate()
+    private void Generate()
     {
         while (!OneCycle());
     }
 
-    public bool OneCycle()
+    private bool OneCycle()
     {
         int entropy = FindLowestEntropy();
         var cells = GetCellsWithEntropy(entropy);
@@ -93,7 +93,7 @@ public class Generator
         return CollapseCell(Island[xRand, yRand]);
     }
 
-    public void CollapseRandomCells(int cells = 1)
+    private void CollapseRandomCells(int cells = 1)
     {
         for (int i = 0; i < cells; i++)
         {
@@ -109,8 +109,8 @@ public class Generator
         cell.Collapse();
         return true;
     }
-    
-    public void ReduceEntropy()
+
+    private void ReduceEntropy()
     {
         foreach (var cell in Island) cell.ReduceNeighbors();
         ResetReducedFlags();
@@ -127,7 +127,7 @@ public class Generator
         }
     }
 
-    public string GetLayout()
+    private string GetLayout()
     {
         string output = "";
         for (int x = 0; x < XDim; x++)
