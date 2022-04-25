@@ -113,9 +113,14 @@ public class Generator
         return true;
     }
 
-    private void ReduceEntropy()
+    private void ReduceEntropy(List<SuperposedCell> lowEntropyCells = null)
     {
-        foreach (var cell in Island) cell.ReduceNeighbors();
+        if (lowEntropyCells is null)
+        {
+            lowEntropyCells = GetCellsWithEntropy(FindLowestEntropy());
+            lowEntropyCells.AddRange(GetCellsWithEntropy(1));
+        }
+        foreach (var cell in lowEntropyCells) cell.ReduceNeighbors();
         ResetReducedFlags();
     }
 
@@ -251,22 +256,28 @@ public class SuperposedCell
         foreach (var neighbour in Neighbours)
         {
             if (neighbour.IsCollapsed) continue;
+            if (neighbour.Reduced) continue;
+            if (neighbour.Entropy == 1) 
+            {
+                neighbour.IsCollapsed = true;
+                continue;
+            }
 
             if (neighbour.YPos == YPos + 1 && neighbour.XPos == XPos)
             {
-                ControlConnectors(neighbour, CellType.NorthConnectors);
+                ControlConnectors(neighbour, CellType.NConnectors);
             } 
             else if (neighbour.YPos == YPos - 1 && neighbour.XPos == XPos)
             {
-                ControlConnectors(neighbour, CellType.SouthConnectors);
+                ControlConnectors(neighbour, CellType.SConnectors);
             }
             else if (neighbour.YPos == YPos && neighbour.XPos == XPos + 1)
             {
-                ControlConnectors(neighbour, CellType.EastConnectors);
+                ControlConnectors(neighbour, CellType.EConnectors);
             }
             else if (neighbour.YPos == YPos && neighbour.XPos == XPos - 1)
             {
-                ControlConnectors(neighbour, CellType.WestConnectors);
+                ControlConnectors(neighbour, CellType.WConnectors);
             } 
             else
             {
@@ -298,7 +309,11 @@ public class SuperposedCell
 
 
 public static class Island
-{
+{    
+    public static class Rules
+    {
+        
+    }
 
     public static bool TryRemove(this List<Island.Cell> cells, Island.Type type) {
         var index = cells.FindIndex(x => x.MyType == type);
@@ -321,19 +336,29 @@ public static class Island
     public abstract class Cell
     {
         public abstract Island.Type MyType { get; }
-        public List<Island.Type> NorthConnectors { get; set; }
-        public List<Island.Type> SouthConnectors { get; set; }
-        public List<Island.Type> EastConnectors { get; set; }
-        public List<Island.Type> WestConnectors { get; set; }
+        public List<Island.Type> NConnectors { get; set; }
+        public List<Island.Type> SConnectors { get; set; }
+        public List<Island.Type> EConnectors { get; set; }
+        public List<Island.Type> WConnectors { get; set; }
 
-        public List<Island.Type> Connectors => new List<Type>().Concat(NorthConnectors).Concat(SouthConnectors).Concat(EastConnectors).Concat(WestConnectors).Distinct().ToList();
-        public List<Type>[] ConnectorArray => new List<Type>[] { NorthConnectors, SouthConnectors, EastConnectors, WestConnectors };
+        public List<Island.Type> NWConnectors { get; set; }
+        public List<Island.Type> SWConnectors { get; set; }
+        public List<Island.Type> SEConnectors { get; set; }
+        public List<Island.Type> NEConnectors { get; set; }
+
+        public List<Island.Type> Connectors => new List<Type>().Concat(NConnectors).Concat(SConnectors).Concat(EConnectors).Concat(WConnectors).Distinct().ToList();
+        public List<Type>[] ConnectorArray => new List<Type>[] { NConnectors, SConnectors, EConnectors, WConnectors };
         public Cell()
         {
-            NorthConnectors = new List<Type>() { MyType };
-            SouthConnectors = new List<Type>() { MyType };
-            EastConnectors = new List<Type>() { MyType };
-            WestConnectors = new List<Type>() { MyType };
+            NConnectors = new List<Type>() { MyType };
+            SConnectors = new List<Type>() { MyType };
+            EConnectors = new List<Type>() { MyType };
+            WConnectors = new List<Type>() { MyType };
+            
+            NWConnectors = new List<Type>() { MyType };
+            SWConnectors = new List<Type>() { MyType };
+            NEConnectors = new List<Type>() { MyType };
+            SEConnectors = new List<Type>() { MyType };            
         }
     }
 
@@ -341,21 +366,21 @@ public static class Island
     {
         public Savannah()
         {
-            NorthConnectors.Add(Type.Jungle);
-            NorthConnectors.Add(Type.Mountains);
-            NorthConnectors.Add(Type.Desert);
+            NConnectors.Add(Type.Jungle);
+            NConnectors.Add(Type.Mountains);
+            NConnectors.Add(Type.Desert);
 
-            SouthConnectors.Add(Type.Jungle);
-            SouthConnectors.Add(Type.Mountains);
-            SouthConnectors.Add(Type.Desert);
+            SConnectors.Add(Type.Jungle);
+            SConnectors.Add(Type.Mountains);
+            SConnectors.Add(Type.Desert);
 
-            EastConnectors.Add(Type.Jungle);
-            EastConnectors.Add(Type.Mountains);
-            EastConnectors.Add(Type.Desert);
+            EConnectors.Add(Type.Jungle);
+            EConnectors.Add(Type.Mountains);
+            EConnectors.Add(Type.Desert);
 
-            WestConnectors.Add(Type.Jungle);
-            WestConnectors.Add(Type.Mountains);
-            WestConnectors.Add(Type.Desert);
+            WConnectors.Add(Type.Jungle);
+            WConnectors.Add(Type.Mountains);
+            WConnectors.Add(Type.Desert);
         }
 
         public override Type MyType => Type.Savannah;
@@ -365,17 +390,17 @@ public static class Island
     {
         public Jungle()
         {
-            NorthConnectors.Add(Type.Savannah);
-            NorthConnectors.Add(Type.Ocean);
+            NConnectors.Add(Type.Savannah);
+            //NConnectors.Add(Type.Ocean);
 
-            SouthConnectors.Add(Type.Savannah);
-            SouthConnectors.Add(Type.Ocean);
+            SConnectors.Add(Type.Savannah);
+            //SConnectors.Add(Type.Ocean);
 
-            EastConnectors.Add(Type.Savannah);
-            EastConnectors.Add(Type.Ocean);
+            EConnectors.Add(Type.Savannah);
+            //EConnectors.Add(Type.Ocean);
 
-            WestConnectors.Add(Type.Savannah);
-            WestConnectors.Add(Type.Ocean);
+            WConnectors.Add(Type.Savannah);
+            //WConnectors.Add(Type.Ocean);
 
         }
 
@@ -386,13 +411,13 @@ public static class Island
     {
         public Mountains()
         {
-            NorthConnectors.Add(Type.Savannah);
+            NConnectors.Add(Type.Savannah);
 
-            SouthConnectors.Add(Type.Savannah);
+            SConnectors.Add(Type.Savannah);
 
-            EastConnectors.Add(Type.Savannah);
+            EConnectors.Add(Type.Savannah);
 
-            WestConnectors.Add(Type.Savannah);
+            WConnectors.Add(Type.Savannah);
         }
 
         public override Type MyType => Type.Mountains;
@@ -402,17 +427,17 @@ public static class Island
     {
         public Ocean()
         {
-            NorthConnectors.Add(Type.Savannah);
-            NorthConnectors.Add(Type.Jungle);
+            NConnectors.Add(Type.Savannah);
+            //NConnectors.Add(Type.Jungle);
 
-            SouthConnectors.Add(Type.Savannah);
-            SouthConnectors.Add(Type.Jungle);
+            SConnectors.Add(Type.Savannah);
+            //SConnectors.Add(Type.Jungle);
 
-            EastConnectors.Add(Type.Savannah);
-            EastConnectors.Add(Type.Jungle);
+            EConnectors.Add(Type.Savannah);
+            //EConnectors.Add(Type.Jungle);
 
-            WestConnectors.Add(Type.Savannah);
-            WestConnectors.Add(Type.Jungle);
+            WConnectors.Add(Type.Savannah);
+            //WConnectors.Add(Type.Jungle);
         }
 
         public override Type MyType => Type.Ocean;
@@ -422,17 +447,17 @@ public static class Island
     {
         public Desert()
         {
-            NorthConnectors.Add(Type.Savannah);
-            NorthConnectors.Add(Type.Jungle);
+            NConnectors.Add(Type.Savannah);
+            NConnectors.Add(Type.Jungle);
 
-            SouthConnectors.Add(Type.Savannah);
-            SouthConnectors.Add(Type.Jungle);
+            SConnectors.Add(Type.Savannah);
+            SConnectors.Add(Type.Jungle);
 
-            EastConnectors.Add(Type.Savannah);
-            EastConnectors.Add(Type.Jungle);
+            EConnectors.Add(Type.Savannah);
+            EConnectors.Add(Type.Jungle);
 
-            WestConnectors.Add(Type.Savannah);
-            WestConnectors.Add(Type.Jungle);
+            WConnectors.Add(Type.Savannah);
+            WConnectors.Add(Type.Jungle);
         }
 
         public override Type MyType => Type.Desert;
